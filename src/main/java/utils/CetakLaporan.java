@@ -1,4 +1,5 @@
 package utils;
+
 import net.sf.jasperreports.engine.DefaultJasperReportsContext;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
@@ -14,22 +15,27 @@ import java.util.Map;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import java.io.InputStream;
-public class CetakLaporan{
-    public static void cetak(String file, Map param){
-        try{
-            System.out.println("=== CETAK: "+file+" ===");
-            String namaJasper = file.endsWith(".jasper") ? file : file.replace(".jrxml",".jasper");
-            InputStream f = CetakLaporan.class.getResourceAsStream("/laporan/"+namaJasper);
+
+public class CetakLaporan {
+
+    public static void cetak(String file, Map param) {
+        try {
+            System.out.println("=== CETAK: " + file + " ===");
+            String namaJasper = file.endsWith(".jasper") ? file : file.replace(".jrxml", ".jasper");
+            InputStream f = CetakLaporan.class.getResourceAsStream("/laporan/" + namaJasper);
             JasperReport jr = null;
-            if(f != null){
-                jr = (JasperReport)JRLoader.loadObject(f);
+            if (f != null) {
+                jr = (JasperReport) JRLoader.loadObject(f);
             } else {
-                String namaJrxml = file.replace(".jasper",".jrxml");
-                InputStream fx = CetakLaporan.class.getResourceAsStream("/laporan/"+namaJrxml);
-                if(fx==null){ JOptionPane.showMessageDialog(null,"File tidak ditemukan ["+namaJrxml+"]"); return; }
+                String namaJrxml = file.replace(".jasper", ".jrxml");
+                InputStream fx = CetakLaporan.class.getResourceAsStream("/laporan/" + namaJrxml);
+                if (fx == null) {
+                    JOptionPane.showMessageDialog(null, "File tidak ditemukan [" + namaJrxml + "]");
+                    return;
+                }
                 JasperReportsContext ctx = DefaultJasperReportsContext.getInstance();
-                ctx.setProperty("net.sf.jasperreports.compiler.source","17");
-                ctx.setProperty("net.sf.jasperreports.compiler.target","17");
+                ctx.setProperty("net.sf.jasperreports.compiler.source", "17");
+                ctx.setProperty("net.sf.jasperreports.compiler.target", "17");
                 JasperDesign design = JRXmlLoader.load(fx);
                 design.setLanguage("java");
                 JRJavacCompiler compiler = new JRJavacCompiler(ctx);
@@ -37,9 +43,12 @@ public class CetakLaporan{
             }
             JasperPrint jp = JasperFillManager.fillReport(jr, param, Koneksi.getConnection());
             JasperViewer vwr = new JasperViewer(jp, false);
-vwr.setTitle("Laporan - SIM Klinik Gigi");
-vwr.setExtendedState(JFrame.MAXIMIZED_BOTH);
-vwr.setVisible(true);
-        }catch(Exception e){ e.printStackTrace(); JOptionPane.showMessageDialog(null,"Gagal cetak ["+file+"]:\n"+e.getMessage()); }
+            vwr.setTitle("Laporan - SIM Klinik Gigi");
+            vwr.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            vwr.setVisible(true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Gagal cetak [" + file + "]:\n" + e.getMessage());
+        }
     }
 }

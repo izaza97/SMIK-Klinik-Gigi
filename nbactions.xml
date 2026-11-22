@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <actions>
-  <action>
-    <actionName>run</actionName>
-    <goals><goal>package</goal><goal>org.codehaus.mojo:exec-maven-plugin:3.5.0:java</goal></goals>
-    <properties>
-      <exec.mainClass>com.klinikgigi.Main</exec.mainClass>
-      <exec.jvmArgs>--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED</exec.jvmArgs>
-    </properties>
-  </action>
+    <action>
+        <actionName>run</actionName>
+        <goals>
+            <goal>package</goal>
+            <goal>org.codehaus.mojo:exec-maven-plugin:3.5.0:java</goal>
+        </goals>
+        <properties>
+            <exec.mainClass>com.klinikgigi.Main</exec.mainClass>
+            <exec.jvmArgs>--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED</exec.jvmArgs>
+        </properties>
+    </action>
 </actions>
