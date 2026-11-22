@@ -1,0 +1,5 @@
+CARA PASANG LOGO
+1. Klik kanan gambar background putih di chat > Save image as > simpan ke folder ini dengan nama logo.png
+2. Path penuh: src/main/resources/logo/logo.png
+3. NetBeans > Clean and Build > Run
+4. Jika logo.png tidak ada, program pakai gigi navy fallback, tidak error.

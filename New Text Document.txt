@@ -1,0 +1,259 @@
+# fix_design.ps1 - Timpa 7 jrxml template jadi desain full + field + tabel
+# Taruh file ini DI DALAM folder SIMKlinikGigi
+$ErrorActionPreference = "Stop"
+$Root = if($PSScriptRoot){ $PSScriptRoot } else { Get-Location }
+if(!(Test-Path (Join-Path $Root "pom.xml"))){
+  Write-Host "TARUH script INI di dalam folder SIMKlinikGigi (sejajar pom.xml)!" -ForegroundColor Red; exit
+}
+$lapDir = Join-Path $Root "src/main/resources/laporan"
+Write-Host "Patch desain di: $lapDir" -ForegroundColor Cyan
+$utf8NoBom = New-Object System.Text.UTF8Encoding $false
+function TulisJR($nama,$isi){ [System.IO.File]::WriteAllText((Join-Path $lapDir $nama),$isi,$utf8NoBom); Write-Host "OK $nama" -ForegroundColor Green }
+
+# ---------- 1. LapKunjungan ----------
+TulisJR "LapKunjungan.jrxml" @'
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="LapKunjungan" language="java" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+  <property name="net.sf.jasperreports.compiler.source" value="17"/>
+  <property name="net.sf.jasperreports.compiler.target" value="17"/>
+  <parameter name="dari" class="java.sql.Date"/>
+  <parameter name="sampai" class="java.sql.Date"/>
+  <parameter name="id_dokter" class="java.lang.String" isForPrompting="false"><defaultValueExpression><![CDATA["SEMUA"]]></defaultValueExpression></parameter>
+  <queryString><![CDATA[SELECT k.tanggal, p.no_rm, p.nama, d.nama AS dokter, k.jenis, k.status FROM kunjungan k JOIN pasien p ON k.no_rm=p.no_rm JOIN dokter d ON k.id_dokter=d.id_dokter WHERE k.tanggal BETWEEN $P{dari} AND $P{sampai} AND ($P{id_dokter} = 'SEMUA' OR k.id_dokter = $P{id_dokter}) ORDER BY k.tanggal]]></queryString>
+  <field name="tanggal" class="java.sql.Date"/>
+  <field name="no_rm" class="java.lang.String"/>
+  <field name="nama" class="java.lang.String"/>
+  <field name="dokter" class="java.lang.String"/>
+  <field name="jenis" class="java.lang.String"/>
+  <field name="status" class="java.lang.String"/>
+  <title><band height="60"><staticText><reportElement x="0" y="0" width="555" height="30"/><textElement textAlignment="Center"><font size="16" isBold="true"/></textElement><text><![CDATA[LAPORAN KUNJUNGAN PASIEN]]></text></staticText><textField><reportElement x="0" y="30" width="555" height="20"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA["Periode: "+$P{dari}+" s/d "+$P{sampai}]]></textFieldExpression></textField></band></title>
+  <columnHeader><band height="22">
+    <staticText><reportElement x="0" y="0" width="80" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Tanggal]]></text></staticText>
+    <staticText><reportElement x="80" y="0" width="70" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[No RM]]></text></staticText>
+    <staticText><reportElement x="150" y="0" width="130" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Nama]]></text></staticText>
+    <staticText><reportElement x="280" y="0" width="120" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Dokter]]></text></staticText>
+    <staticText><reportElement x="400" y="0" width="60" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Jenis]]></text></staticText>
+    <staticText><reportElement x="460" y="0" width="95" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Status]]></text></staticText>
+  </band></columnHeader>
+  <detail><band height="20">
+    <textField pattern="dd-MM-yyyy"><reportElement x="0" y="0" width="80" height="20"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA[$F{tanggal}]]></textFieldExpression></textField>
+    <textField><reportElement x="80" y="0" width="70" height="20"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA[$F{no_rm}]]></textFieldExpression></textField>
+    <textField><reportElement x="150" y="0" width="130" height="20"/><box><pen lineWidth="0.5"/></box><textElement verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA[$F{nama}]]></textFieldExpression></textField>
+    <textField><reportElement x="280" y="0" width="120" height="20"/><box><pen lineWidth="0.5"/></box><textElement verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA[$F{dokter}]]></textFieldExpression></textField>
+    <textField><reportElement x="400" y="0" width="60" height="20"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA[$F{jenis}]]></textFieldExpression></textField>
+    <textField><reportElement x="460" y="0" width="95" height="20"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA[$F{status}]]></textFieldExpression></textField>
+  </band></detail>
+  <pageFooter><band height="20"><textField><reportElement x="0" y="0" width="300" height="20"/><textElement><font size="8"/></textElement><textFieldExpression><![CDATA["Dicetak: "+new java.util.Date()]]></textFieldExpression></textField><textField><reportElement x="355" y="0" width="200" height="20"/><textElement textAlignment="Right"><font size="8"/></textElement><textFieldExpression><![CDATA["Hal "+$V{PAGE_NUMBER}]]></textFieldExpression></textField></band></pageFooter>
+  <summary><band height="30"><staticText><reportElement x="0" y="5" width="150" height="20"/><textElement><font size="10" isBold="true"/></textElement><text><![CDATA[Total Kunjungan :]]></text></staticText><textField><reportElement x="150" y="5" width="100" height="20"/><textElement><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{REPORT_COUNT}+" pasien"]]></textFieldExpression></textField></band></summary>
+</jasperReport>
+'@
+
+# ---------- 2. LapPendapatan ----------
+TulisJR "LapPendapatan.jrxml" @'
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="LapPendapatan" language="java" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+  <property name="net.sf.jasperreports.compiler.source" value="17"/>
+  <property name="net.sf.jasperreports.compiler.target" value="17"/>
+  <parameter name="dari" class="java.sql.Date"/>
+  <parameter name="sampai" class="java.sql.Date"/>
+  <queryString><![CDATA[SELECT byr.tgl_bayar, byr.no_kuitansi, p.nama, byr.total_jasa, byr.total_obat, byr.total, byr.metode FROM pembayaran byr JOIN kunjungan k ON byr.id_kunjungan=k.id_kunjungan JOIN pasien p ON k.no_rm=p.no_rm WHERE DATE(byr.tgl_bayar) BETWEEN $P{dari} AND $P{sampai} ORDER BY byr.tgl_bayar]]></queryString>
+  <field name="tgl_bayar" class="java.sql.Timestamp"/>
+  <field name="no_kuitansi" class="java.lang.String"/>
+  <field name="nama" class="java.lang.String"/>
+  <field name="total_jasa" class="java.lang.Integer"/>
+  <field name="total_obat" class="java.lang.Integer"/>
+  <field name="total" class="java.lang.Integer"/>
+  <field name="metode" class="java.lang.String"/>
+  <variable name="sumJasa" class="java.lang.Integer" calculation="Sum"><variableExpression><![CDATA[$F{total_jasa}]]></variableExpression></variable>
+  <variable name="sumObat" class="java.lang.Integer" calculation="Sum"><variableExpression><![CDATA[$F{total_obat}]]></variableExpression></variable>
+  <variable name="sumTotal" class="java.lang.Integer" calculation="Sum"><variableExpression><![CDATA[$F{total}]]></variableExpression></variable>
+  <title><band height="60"><staticText><reportElement x="0" y="0" width="555" height="30"/><textElement textAlignment="Center"><font size="16" isBold="true"/></textElement><text><![CDATA[LAPORAN PENDAPATAN]]></text></staticText><textField><reportElement x="0" y="30" width="555" height="20"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA["Periode: "+$P{dari}+" s/d "+$P{sampai}]]></textFieldExpression></textField></band></title>
+  <columnHeader><band height="22">
+    <staticText><reportElement x="0" y="0" width="75" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Tanggal]]></text></staticText>
+    <staticText><reportElement x="75" y="0" width="90" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Kuitansi]]></text></staticText>
+    <staticText><reportElement x="165" y="0" width="100" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Pasien]]></text></staticText>
+    <staticText><reportElement x="265" y="0" width="70" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Jasa]]></text></staticText>
+    <staticText><reportElement x="335" y="0" width="70" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Obat]]></text></staticText>
+    <staticText><reportElement x="405" y="0" width="70" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Total]]></text></staticText>
+    <staticText><reportElement x="475" y="0" width="80" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><text><![CDATA[Metode]]></text></staticText>
+  </band></columnHeader>
+  <detail><band height="20">
+    <textField pattern="dd-MM-yyyy"><reportElement x="0" y="0" width="75" height="20"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA[$F{tgl_bayar}]]></textFieldExpression></textField>
+    <textField><reportElement x="75" y="0" width="90" height="20"/><box><pen lineWidth="0.5"/></box><textElement verticalAlignment="Middle"><font size="7"/></textElement><textFieldExpression><![CDATA[$F{no_kuitansi}]]></textFieldExpression></textField>
+    <textField><reportElement x="165" y="0" width="100" height="20"/><box><pen lineWidth="0.5"/></box><textElement verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA[$F{nama}]]></textFieldExpression></textField>
+    <textField pattern="#,##0"><reportElement x="265" y="0" width="70" height="20"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA[$F{total_jasa}]]></textFieldExpression></textField>
+    <textField pattern="#,##0"><reportElement x="335" y="0" width="70" height="20"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA[$F{total_obat}]]></textFieldExpression></textField>
+    <textField pattern="#,##0"><reportElement x="405" y="0" width="70" height="20"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Right" verticalAlignment="Middle"><font size="8" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{total}]]></textFieldExpression></textField>
+    <textField><reportElement x="475" y="0" width="80" height="20"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="8"/></textElement><textFieldExpression><![CDATA[$F{metode}]]></textFieldExpression></textField>
+  </band></detail>
+  <pageFooter><band height="20"><textField><reportElement x="0" y="0" width="300" height="20"/><textElement><font size="8"/></textElement><textFieldExpression><![CDATA["Dicetak: "+new java.util.Date()]]></textFieldExpression></textField></band></pageFooter>
+  <summary><band height="60">
+    <staticText><reportElement x="165" y="5" width="100" height="20"/><textElement textAlignment="Right"><font size="10" isBold="true"/></textElement><text><![CDATA[TOTAL :]]></text></staticText>
+    <textField pattern="#,##0"><reportElement x="265" y="5" width="70" height="20"/><textElement textAlignment="Right"><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{sumJasa}]]></textFieldExpression></textField>
+    <textField pattern="#,##0"><reportElement x="335" y="5" width="70" height="20"/><textElement textAlignment="Right"><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{sumObat}]]></textFieldExpression></textField>
+    <textField pattern="#,##0"><reportElement x="405" y="5" width="70" height="20"/><textElement textAlignment="Right"><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{sumTotal}]]></textFieldExpression></textField>
+  </band></summary>
+</jasperReport>
+'@
+
+# ---------- 3. LapTindakan ----------
+TulisJR "LapTindakan.jrxml" @'
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="LapTindakan" language="java" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+  <property name="net.sf.jasperreports.compiler.source" value="17"/>
+  <property name="net.sf.jasperreports.compiler.target" value="17"/>
+  <parameter name="dari" class="java.sql.Date"/>
+  <parameter name="sampai" class="java.sql.Date"/>
+  <queryString><![CDATA[SELECT l.nama_layanan, COUNT(*) AS jml, SUM(t.tarif) AS pendapatan FROM tindakan_kunjungan t JOIN layanan l ON t.kode_layanan=l.kode_layanan JOIN kunjungan k ON t.id_kunjungan=k.id_kunjungan WHERE k.tanggal BETWEEN $P{dari} AND $P{sampai} GROUP BY l.nama_layanan ORDER BY jml DESC]]></queryString>
+  <field name="nama_layanan" class="java.lang.String"/>
+  <field name="jml" class="java.lang.Long"/>
+  <field name="pendapatan" class="java.math.BigDecimal"/>
+  <variable name="totPend" class="java.math.BigDecimal" calculation="Sum"><variableExpression><![CDATA[$F{pendapatan}]]></variableExpression></variable>
+  <title><band height="60"><staticText><reportElement x="0" y="0" width="555" height="30"/><textElement textAlignment="Center"><font size="16" isBold="true"/></textElement><text><![CDATA[LAPORAN TINDAKAN TERBANYAK]]></text></staticText><textField><reportElement x="0" y="30" width="555" height="20"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA["Periode: "+$P{dari}+" s/d "+$P{sampai}]]></textFieldExpression></textField></band></title>
+  <columnHeader><band height="22">
+    <staticText><reportElement x="0" y="0" width="275" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Nama Layanan]]></text></staticText>
+    <staticText><reportElement x="275" y="0" width="100" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Jumlah]]></text></staticText>
+    <staticText><reportElement x="375" y="0" width="180" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Pendapatan]]></text></staticText>
+  </band></columnHeader>
+  <detail><band height="20">
+    <textField><reportElement x="0" y="0" width="275" height="20"/><box><pen lineWidth="0.5"/></box><textElement verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{nama_layanan}]]></textFieldExpression></textField>
+    <textField><reportElement x="275" y="0" width="100" height="20"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{jml}]]></textFieldExpression></textField>
+    <textField pattern="#,##0"><reportElement x="375" y="0" width="180" height="20"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{pendapatan}]]></textFieldExpression></textField>
+  </band></Detail>
+  <pageFooter><band height="20"><textField><reportElement x="0" y="0" width="555" height="20"/><textElement textAlignment="Right"><font size="8"/></textElement><textFieldExpression><![CDATA["Hal "+$V{PAGE_NUMBER}]]></textFieldExpression></textField></band></pageFooter>
+  <summary><band height="30"><staticText><reportElement x="0" y="5" width="275" height="20"/><textElement textAlignment="Right"><font size="10" isBold="true"/></textElement><text><![CDATA[TOTAL PENDAPATAN :]]></text></staticText><textField pattern="#,##0"><reportElement x="375" y="5" width="180" height="20"/><textElement textAlignment="Right"><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA[$V{totPend}]]></textFieldExpression></textField></band></summary>
+</jasperReport>
+'@
+
+# ---------- 4. LapDiagnosis ----------
+TulisJR "LapDiagnosis.jrxml" @'
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="LapDiagnosis" language="java" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+  <property name="net.sf.jasperreports.compiler.source" value="17"/>
+  <property name="net.sf.jasperreports.compiler.target" value="17"/>
+  <parameter name="dari" class="java.sql.Date"/>
+  <parameter name="sampai" class="java.sql.Date"/>
+  <queryString><![CDATA[SELECT d.kode_diagnosis, d.nama_diagnosis, COUNT(*) AS jml FROM rekam_medis r JOIN diagnosis d ON r.kode_diagnosis=d.kode_diagnosis JOIN kunjungan k ON r.id_kunjungan=k.id_kunjungan WHERE k.tanggal BETWEEN $P{dari} AND $P{sampai} GROUP BY d.kode_diagnosis, d.nama_diagnosis ORDER BY jml DESC]]></queryString>
+  <field name="kode_diagnosis" class="java.lang.String"/>
+  <field name="nama_diagnosis" class="java.lang.String"/>
+  <field name="jml" class="java.lang.Long"/>
+  <title><band height="70"><staticText><reportElement x="0" y="0" width="555" height="30"/><textElement textAlignment="Center"><font size="16" isBold="true"/></textElement><text><![CDATA[LAPORAN DIAGNOSIS TERBANYAK]]></text></staticText><textField><reportElement x="0" y="30" width="555" height="20"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA["Periode: "+$P{dari}+" s/d "+$P{sampai}]]></textFieldExpression></textField><staticText><reportElement x="0" y="50" width="555" height="15"/><textElement textAlignment="Center"><font size="8" isItalic="true"/></textElement><text><![CDATA[(Tanpa identitas pasien - sesuai kebutuhan skripsi)]]></text></staticText></band></title>
+  <columnHeader><band height="22">
+    <staticText><reportElement x="0" y="0" width="80" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Kode ICD]]></text></staticText>
+    <staticText><reportElement x="80" y="0" width="355" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Nama Diagnosis]]></text></staticText>
+    <staticText><reportElement x="435" y="0" width="120" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Jumlah]]></text></staticText>
+  </band></columnHeader>
+  <detail><band height="20">
+    <textField><reportElement x="0" y="0" width="80" height="20"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{kode_diagnosis}]]></textFieldExpression></textField>
+    <textField><reportElement x="80" y="0" width="355" height="20"/><box><pen lineWidth="0.5"/></box><textElement verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{nama_diagnosis}]]></textFieldExpression></textField>
+    <textField><reportElement x="435" y="0" width="120" height="20"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{jml}]]></textFieldExpression></textField>
+  </band></Detail>
+  <pageFooter><band height="20"><textField><reportElement x="0" y="0" width="555" height="20"/><textElement textAlignment="Right"><font size="8"/></textElement><textFieldExpression><![CDATA["Hal "+$V{PAGE_NUMBER}]]></textFieldExpression></textField></band></pageFooter>
+</jasperReport>
+'@
+
+# ---------- 5. LapKinerjaDokter ----------
+TulisJR "LapKinerjaDokter.jrxml" @'
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="LapKinerjaDokter" language="java" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+  <property name="net.sf.jasperreports.compiler.source" value="17"/>
+  <property name="net.sf.jasperreports.compiler.target" value="17"/>
+  <parameter name="dari" class="java.sql.Date"/>
+  <parameter name="sampai" class="java.sql.Date"/>
+  <queryString><![CDATA[SELECT d.nama, COUNT(k.id_kunjungan) AS jml_pasien, SUM(pb.total) AS pendapatan, AVG(TIMESTAMPDIFF(MINUTE,k.jam_daftar,k.jam_panggil)) AS rata_tunggu FROM kunjungan k JOIN dokter d ON k.id_dokter=d.id_dokter LEFT JOIN pembayaran pb ON pb.id_kunjungan=k.id_kunjungan WHERE k.tanggal BETWEEN $P{dari} AND $P{sampai} GROUP BY d.nama]]></queryString>
+  <field name="nama" class="java.lang.String"/>
+  <field name="jml_pasien" class="java.lang.Long"/>
+  <field name="pendapatan" class="java.math.BigDecimal"/>
+  <field name="rata_tunggu" class="java.math.BigDecimal"/>
+  <title><band height="60"><staticText><reportElement x="0" y="0" width="555" height="30"/><textElement textAlignment="Center"><font size="16" isBold="true"/></textElement><text><![CDATA[LAPORAN KINERJA DOKTER]]></text></staticText><textField><reportElement x="0" y="30" width="555" height="20"/><textElement textAlignment="Center"/><textFieldExpression><![CDATA["Periode: "+$P{dari}+" s/d "+$P{sampai}]]></textFieldExpression></textField></band></title>
+  <columnHeader><band height="22">
+    <staticText><reportElement x="0" y="0" width="175" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Nama Dokter]]></text></staticText>
+    <staticText><reportElement x="175" y="0" width="100" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Jml Pasien]]></text></staticText>
+    <staticText><reportElement x="275" y="0" width="150" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Pendapatan]]></text></staticText>
+    <staticText><reportElement x="425" y="0" width="130" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Rata Tunggu]]></text></staticText>
+  </band></columnHeader>
+  <Detail><band height="20">
+    <textField><reportElement x="0" y="0" width="175" height="20"/><box><pen lineWidth="0.5"/></box><textElement verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{nama}]]></textFieldExpression></textField>
+    <textField><reportElement x="175" y="0" width="100" height="20"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{jml_pasien}]]></textFieldExpression></textField>
+    <textField pattern="#,##0" isBlankWhenNull="true"><reportElement x="275" y="0" width="150" height="20"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Right" verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{pendapatan}]]></textFieldExpression></textField>
+    <textField pattern="#,##0.0" isBlankWhenNull="true"><reportElement x="425" y="0" width="130" height="20"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{rata_tunggu}]]></textFieldExpression></textField>
+  </band></Detail>
+  <pageFooter><band height="20"><textField><reportElement x="0" y="0" width="555" height="20"/><textElement textAlignment="Right"><font size="8"/></textElement><textFieldExpression><![CDATA["Hal "+$V{PAGE_NUMBER}]]></textFieldExpression></textField></band></pageFooter>
+</jasperReport>
+'@
+
+# ---------- 6. Kuitansi ----------
+TulisJR "Kuitansi.jrxml" @'
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Kuitansi" language="java" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+  <property name="net.sf.jasperreports.compiler.source" value="17"/>
+  <property name="net.sf.jasperreports.compiler.target" value="17"/>
+  <parameter name="no_kuitansi" class="java.lang.String"><defaultValueExpression><![CDATA[""]]></defaultValueExpression></parameter>
+  <queryString><![CDATA[SELECT pb.no_kuitansi, pb.tgl_bayar, p.nama, d.nama AS dokter, pb.total_jasa, pb.total_obat, pb.total, pb.metode FROM pembayaran pb JOIN kunjungan k ON pb.id_kunjungan=k.id_kunjungan JOIN pasien p ON k.no_rm=p.no_rm JOIN dokter d ON k.id_dokter=d.id_dokter WHERE pb.no_kuitansi = $P{no_kuitansi}]]></queryString>
+  <field name="no_kuitansi" class="java.lang.String"/>
+  <field name="tgl_bayar" class="java.sql.Timestamp"/>
+  <field name="nama" class="java.lang.String"/>
+  <field name="dokter" class="java.lang.String"/>
+  <field name="total_jasa" class="java.lang.Integer"/>
+  <field name="total_obat" class="java.lang.Integer"/>
+  <field name="total" class="java.lang.Integer"/>
+  <field name="metode" class="java.lang.String"/>
+  <title><band height="85"><staticText><reportElement x="0" y="0" width="555" height="25"/><textElement textAlignment="Center"><font size="18" isBold="true"/></textElement><text><![CDATA[KLINIK GIGI SEHAT]]></text></staticText><staticText><reportElement x="0" y="25" width="555" height="18"/><textElement textAlignment="Center"><font size="10"/></textElement><text><![CDATA[Jl. Contoh No. 123, Telp 021-123456]]></text></staticText><line><reportElement x="0" y="45" width="555" height="1"/></line><staticText><reportElement x="0" y="50" width="555" height="30"/><textElement textAlignment="Center"><font size="16" isBold="true"/></textElement><text><![CDATA[KUITANSI PEMBAYARAN]]></text></staticText></band></title>
+  <Detail><band height="240">
+    <staticText><reportElement x="20" y="10" width="130" height="20"/><textElement><font size="11"/></textElement><text><![CDATA[No. Kuitansi :]]></text></staticText>
+    <textField><reportElement x="150" y="10" width="300" height="20"/><textElement><font size="11" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{no_kuitansi}]]></textFieldExpression></textField>
+    <staticText><reportElement x="20" y="35" width="130" height="20"/><textElement><font size="11"/></textElement><text><![CDATA[Tanggal :]]></text></staticText>
+    <textField pattern="dd-MM-yyyy HH:mm"><reportElement x="150" y="35" width="300" height="20"/><textElement><font size="11"/></textElement><textFieldExpression><![CDATA[$F{tgl_bayar}]]></textFieldExpression></textField>
+    <staticText><reportElement x="20" y="60" width="130" height="20"/><textElement><font size="11"/></textElement><text><![CDATA[Pasien :]]></text></staticText>
+    <textField><reportElement x="150" y="60" width="300" height="20"/><textElement><font size="11"/></textElement><textFieldExpression><![CDATA[$F{nama}]]></textFieldExpression></textField>
+    <staticText><reportElement x="20" y="85" width="130" height="20"/><textElement><font size="11"/></textElement><text><![CDATA[Dokter :]]></text></staticText>
+    <textField><reportElement x="150" y="85" width="300" height="20"/><textElement><font size="11"/></textElement><textFieldExpression><![CDATA[$F{dokter}]]></textFieldExpression></textField>
+    <line><reportElement x="20" y="110" width="515" height="1"/></line>
+    <staticText><reportElement x="20" y="120" width="200" height="20"/><textElement><font size="11"/></textElement><text><![CDATA[Total Jasa Tindakan : Rp]]></text></staticText>
+    <textField pattern="#,##0"><reportElement x="250" y="120" width="150" height="20"/><textElement textAlignment="Right"><font size="11"/></textElement><textFieldExpression><![CDATA[$F{total_jasa}]]></textFieldExpression></textField>
+    <staticText><reportElement x="20" y="145" width="200" height="20"/><textElement><font size="11"/></textElement><text><![CDATA[Total Obat : Rp]]></text></staticText>
+    <textField pattern="#,##0"><reportElement x="250" y="145" width="150" height="20"/><textElement textAlignment="Right"><font size="11"/></textElement><textFieldExpression><![CDATA[$F{total_obat}]]></textFieldExpression></textField>
+    <staticText><reportElement x="20" y="170" width="200" height="22"/><textElement><font size="12" isBold="true"/></textElement><text><![CDATA[TOTAL BAYAR : Rp]]></text></staticText>
+    <textField pattern="#,##0"><reportElement x="250" y="170" width="150" height="22"/><textElement textAlignment="Right"><font size="12" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{total}]]></textFieldExpression></textField>
+    <staticText><reportElement x="20" y="195" width="130" height="20"/><textElement><font size="11"/></textElement><text><![CDATA[Metode :]]></text></staticText>
+    <textField><reportElement x="150" y="195" width="200" height="20"/><textElement><font size="11" isBold="true"/></textElement><textFieldExpression><![CDATA[$F{metode}]]></textFieldExpression></textField>
+  </band></Detail>
+  <pageFooter><band height="80"><staticText><reportElement x="355" y="0" width="200" height="20"/><textElement textAlignment="Center"><font size="10"/></textElement><text><![CDATA[Kasir,]]></text></staticText><staticText><reportElement x="355" y="50" width="200" height="20"/><textElement textAlignment="Center"><font size="10"/></textElement><text><![CDATA[( .................... )]]></text></staticText></band></pageFooter>
+</jasperReport>
+'@
+
+# ---------- 7. Resep ----------
+TulisJR "Resep.jrxml" @'
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Resep" language="java" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+  <property name="net.sf.jasperreports.compiler.source" value="17"/>
+  <property name="net.sf.jasperreports.compiler.target" value="17"/>
+  <parameter name="id_kunjungan" class="java.lang.Integer"><defaultValueExpression><![CDATA[0]]></defaultValueExpression></parameter>
+  <queryString><![CDATA[SELECT p.nama, o.nama_obat, r.jumlah, r.aturan_pakai FROM resep r JOIN obat o ON r.kode_obat=o.kode_obat JOIN kunjungan k ON r.id_kunjungan=k.id_kunjungan JOIN pasien p ON k.no_rm=p.no_rm WHERE r.id_kunjungan = $P{id_kunjungan}]]></queryString>
+  <field name="nama" class="java.lang.String"/>
+  <field name="nama_obat" class="java.lang.String"/>
+  <field name="jumlah" class="java.lang.Integer"/>
+  <field name="aturan_pakai" class="java.lang.String"/>
+  <group name="gPasien"><groupExpression><![CDATA[$F{nama}]]></groupExpression><groupHeader><band height="25"><textField><reportElement x="0" y="5" width="555" height="20"/><textElement><font size="11" isBold="true"/></textElement><textFieldExpression><![CDATA["Pasien : "+$F{nama}+"   |   ID Kunjungan : "+$P{id_kunjungan}]]></textFieldExpression></textField></band></groupHeader></group>
+  <title><band height="60"><staticText><reportElement x="0" y="0" width="555" height="30"/><textElement textAlignment="Center"><font size="16" isBold="true"/></textElement><text><![CDATA[RESEP OBAT]]></text></staticText></band></title>
+  <columnHeader><band height="22">
+    <staticText><reportElement x="0" y="0" width="40" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[No]]></text></staticText>
+    <staticText><reportElement x="40" y="0" width="235" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Nama Obat]]></text></staticText>
+    <staticText><reportElement x="275" y="0" width="60" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Jumlah]]></text></staticText>
+    <staticText><reportElement x="335" y="0" width="220" height="22" mode="Opaque" backcolor="#D9E1F2"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9" isBold="true"/></textElement><text><![CDATA[Aturan Pakai]]></text></staticText>
+  </band></columnHeader>
+  <Detail><band height="20">
+    <textField><reportElement x="0" y="0" width="40" height="20"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression></textField>
+    <textField><reportElement x="40" y="0" width="235" height="20"/><box><pen lineWidth="0.5"/></box><textElement verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{nama_obat}]]></textFieldExpression></textField>
+    <textField><reportElement x="275" y="0" width="60" height="20"/><box><pen lineWidth="0.5"/></box><textElement textAlignment="Center" verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{jumlah}]]></textFieldExpression></textField>
+    <textField><reportElement x="335" y="0" width="220" height="20"/><box><pen lineWidth="0.5"/></box><textElement verticalAlignment="Middle"><font size="9"/></textElement><textFieldExpression><![CDATA[$F{aturan_pakai}]]></textFieldExpression></textField>
+  </band></Detail>
+  <pageFooter><band height="60"><staticText><reportElement x="355" y="0" width="200" height="20"/><textElement textAlignment="Center"><font size="10"/></textElement><text><![CDATA[Dokter,]]></text></staticText><staticText><reportElement x="355" y="40" width="200" height="20"/><textElement textAlignment="Center"><font size="10"/></textElement><text><![CDATA[( .................... )]]></text></staticText></band></pageFooter>
+</jasperReport>
+'@
+
+# hapus target biar resource lama hilang
+$t = Join-Path $Root "target"
+if(Test-Path $t){ Remove-Item $t -Recurse -Force; Write-Host "OK hapus target" -ForegroundColor Green }
+
+Write-Host "SELESAI. NetBeans > Clean and Build > Run" -ForegroundColor Yellow

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Resep" language="java" whenNoDataType="NoPages" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+  <property name="net.sf.jasperreports.compiler.source" value="17"/>
+  <property name="net.sf.jasperreports.compiler.target" value="17"/>
+  <parameter name="id_kunjungan" class="java.lang.Integer"><defaultValueExpression><![CDATA[0]]></defaultValueExpression></parameter>
+  <queryString><![CDATA[SELECT p.nama AS nama, r.isi_resep AS isi_resep, k.tanggal AS tanggal, r.id_kunjungan AS id_kunjungan, d.nama AS dokter FROM resep r JOIN kunjungan k ON r.id_kunjungan=k.id_kunjungan JOIN pasien p ON k.no_rm=p.no_rm JOIN dokter d ON k.id_dokter=d.id_dokter WHERE r.id_kunjungan = $P{id_kunjungan}]]></queryString>
+  <field name="nama" class="java.lang.String"/>
+  <field name="isi_resep" class="java.lang.String"/>
+  <field name="tanggal" class="java.sql.Date"/>
+  <field name="id_kunjungan" class="java.lang.Integer"/>
+  <field name="dokter" class="java.lang.String"/>
+  <title><band height="90">
+    <rectangle><reportElement x="0" y="0" width="555" height="8" mode="Opaque" backcolor="#0D7A5F"/><graphicElement><pen lineWidth="0.0"/></graphicElement></rectangle>
+    <staticText><reportElement x="0" y="12" width="555" height="24" forecolor="#0D7A5F"/><textElement textAlignment="Center"><font size="18" isBold="true"/></textElement><text><![CDATA[KLINIK GIGI SEHAT]]></text></staticText>
+    <staticText><reportElement x="0" y="36" width="555" height="14" forecolor="#6B7280"/><textElement textAlignment="Center"><font size="8"/></textElement><text><![CDATA[Jl. Senyum Sehat No.12, Jakarta | Telp 021-12345678 | Senin-Sabtu 09.00-20.00]]></text></staticText>
+    <line><reportElement x="0" y="53" width="555" height="1" forecolor="#0D7A5F"/><graphicElement><pen lineWidth="1.5" lineColor="#0D7A5F"/></graphicElement></line>
+    <staticText><reportElement x="0" y="58" width="555" height="22"/><textElement textAlignment="Center"><font size="13" isBold="true"/></textElement><text><![CDATA[RESEP OBAT]]></text></staticText>
+  </band></title>
+  <detail><band height="420">
+    <rectangle><reportElement x="0" y="0" width="555" height="66" mode="Opaque" backcolor="#E6F4F0"/><graphicElement><pen lineWidth="0.5" lineColor="#0D7A5F"/></graphicElement></rectangle>
+    <textField><reportElement x="10" y="6" width="535" height="16" forecolor="#0D7A5F"/><textElement><font size="10" isBold="true"/></textElement><textFieldExpression><![CDATA["Pasien : "+$F{nama}]]></textFieldExpression></textField>
+    <textField pattern="dd-MM-yyyy"><reportElement x="10" y="24" width="260" height="16" forecolor="#374151"/><textElement><font size="9"/></textElement><textFieldExpression><![CDATA["Tanggal : "+$F{tanggal}]]></textFieldExpression></textField>
+    <textField><reportElement x="280" y="24" width="265" height="16" forecolor="#374151"/><textElement><font size="9"/></textElement><textFieldExpression><![CDATA["ID Kunjungan : "+$F{id_kunjungan}]]></textFieldExpression></textField>
+    <textField><reportElement x="10" y="42" width="535" height="16" forecolor="#374151"/><textElement><font size="9"/></textElement><textFieldExpression><![CDATA["Dokter : "+$F{dokter}]]></textFieldExpression></textField>
+    <staticText><reportElement x="0" y="76" width="555" height="20" mode="Opaque" backcolor="#0D7A5F" forecolor="#FFFFFF"/><textElement textAlignment="Center" verticalAlignment="Middle"><font size="10" isBold="true"/></textElement><text><![CDATA[ISI RESEP]]></text></staticText>
+    <textField isStretchWithOverflow="true"><reportElement x="0" y="100" width="555" height="280"/><box><pen lineWidth="0.7" lineColor="#0D7A5F"/></box><textElement><font size="11"/></textElement><textFieldExpression><![CDATA[$F{isi_resep}]]></textFieldExpression></textField>
+    <staticText><reportElement x="0" y="388" width="555" height="16" forecolor="#6B7280"/><textElement textAlignment="Center"><font size="8" isItalic="true"/></textElement><text><![CDATA[Tebus di apotek. Resep ini tidak masuk tagihan klinik.]]></text></staticText>
+  </band></detail>
+  <pageFooter><band height="80">
+    <staticText><reportElement x="355" y="0" width="200" height="16"/><textElement textAlignment="Center"><font size="10"/></textElement><text><![CDATA[Dokter,]]></text></staticText>
+    <staticText><reportElement x="355" y="55" width="200" height="16"/><textElement textAlignment="Center"><font size="10"/></textElement><text><![CDATA[( ............................ )]]></text></staticText>
+  </band></pageFooter>
+</jasperReport>
